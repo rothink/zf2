@@ -116,7 +116,3 @@ it should look something like below:
         }
     }
 
-Restart the nginx, now you should be ready to go!
-=======
-# zf2
->>>>>>> d0021a2d0ccf645ddc0156763496621176dbdf37
