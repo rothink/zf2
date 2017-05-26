@@ -5,6 +5,11 @@ namespace Estoque\Controller;
 use Estoque\Entity\Produto;
 use Zend\Mvc\Controller\AbstractActionController;
 use Zend\View\Model\ViewModel;
+use Zend\Mail\Message;
+use Zend\Mail\Transport\SmtpOptions;
+use Zend\Mail\Transport\Smtp as SmtpTransport;
+use Zend\Mime\Message as MimeMessage;
+use Zend\Mime\Part as MimePart;
 
 /**
  * Created by PhpStorm.
@@ -89,6 +94,57 @@ class IndexController extends AbstractActionController {
         }
 
         return new ViewModel(['produto' => $produto]);
+    }
+
+    public function contatoAction()
+    {
+        if($this->request->isPost()) {
+            $nome = $this->request->getPost('nome');
+            $email = $this->request->getPost('email');
+            $mensagem = $this->request->getPost('mensagem');
+
+            $msgHtml = "
+                <b> Nome: </b> {$nome} <br>
+                <b> E-mail: </b> {$email} <br>
+                <b> Mensagem: </b> {$mensagem} <br>
+            ";
+
+            $htmlPart = new MimePart($msgHtml);
+            $htmlPart->type = 'text/html';
+
+            $html = new MimeMessage();
+            $html->addPart($htmlPart);
+
+            $emailP = new Message();
+            $emailP->addTo('bla@gmail.com');
+            $emailP->setSubject('Contato feito pelo site');
+            $emailP->setFrom('bla@gmail.com');
+            $emailP->setBody($html);
+
+            $config = array(
+                'host'  => 'smtp.gmail.com',
+                'connection_class'  => 'login',
+                'connection_config' => array(
+                    'ssl'       => 'tls',
+                    'username' => 'blabla@gmail.com',
+                    'password' => 'blablapass'
+                ),
+                'port' => 587,
+            );
+
+            $transport = new SmtpTransport();
+            $options = new SmtpOptions($config);
+
+            $transport->setOptions($options);
+            $transport->send($emailP);
+
+            $this->flashMessenger()->addMessage('Email enviado com sucesso');
+
+            return $this->redirect()->toUrl('/Index');
+        }
+
+
+        return new ViewModel();
     }
 
 }
